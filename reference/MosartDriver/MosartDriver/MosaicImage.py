@@ -2,10 +2,19 @@ import logging
 import math
 import pathlib
 import pickle
+import os
 from typing import Union
 
-from .MosaicImageChild import MosaicImageChild, blur_im
-from PIL import Image
+try:
+    from PIL import Image
+except ModuleNotFoundError:
+    os.system("pip install pillow")
+    from PIL import Image
+
+try:
+    from .MosaicImageChild import MosaicImageChild, blur_im
+except ImportError:
+    from MosaicImageChild import MosaicImageChild, blur_im
 
 logger = logging.getLogger(__name__)
 
@@ -213,11 +222,11 @@ if __name__ == '__main__':
     import time
     from concurrent.futures import ThreadPoolExecutor
 
-    RELOAD_IMAGES = False
+    RELOAD_IMAGES = True
     INVERSE_RESOLUTION = None  # None to calculate
     MAX_WORKERS = 25
-    SRC = "../prompt_data"
-    GOAL = "./goal.png"
+    SRC = "../../../test_images/src"
+    GOAL = "../../../test_images/targets/target2.jpg"
     MAX_IMAGES = 10000  # None for all images
     PERCENTAGE_TO_INCLUDE = 1
 

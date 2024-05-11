@@ -19,5 +19,5 @@ pub fn calculate_optimal_image_resolution(target: DynamicImage, image_count: u32
     let total_area: u32 = target_width * target_height;
     let chunk_area: f64 = (total_area / image_count) as f64;
 
-    return chunk_area.sqrt().round() as u32;
+    return chunk_area.sqrt().floor() as u32;
 }

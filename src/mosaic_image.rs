@@ -1,4 +1,4 @@
-use image::{DynamicImage, GenericImageView};
+use image::{DynamicImage, GenericImageView, imageops, RgbImage};
 use image::imageops::FilterType;
 
 #[path = "./utils.rs"]
@@ -16,10 +16,8 @@ use rayon::prelude::*;
 pub struct MosaicImage {
     target: DynamicImage,
     image_paths: Vec<String>,
-    images: Vec<MosaicImageChild>,
+    pub images: Vec<MosaicImageChild>,
     closest: Vec<MosaicImageChild>,
-    processed_width: u32,
-    processed_height: u32,
     target_width: u32,
     target_height: u32,
     pub grid_resolution: u32,
@@ -33,8 +31,6 @@ impl MosaicImage {
             image_paths: Vec::new(),
             images: Vec::new(),
             closest: Vec::new(),
-            processed_width: 0,
-            processed_height: 0,
             grid_resolution: 0,
             target_width: 0,
             target_height: 0,
@@ -69,7 +65,7 @@ impl MosaicImage {
         return instance;
     }
 
-    fn calculate_blocks(instance: &MosaicImage) -> u32 {
+    pub fn calculate_blocks(instance: &MosaicImage) -> u32 {
         /*
         Calculates the amount of blocks that will be present in instance.rgb_targets for
         about an inadequate amount of blocks.
@@ -98,6 +94,9 @@ impl MosaicImage {
         println!("Resizing to {width_resized}x{height_resized}");
         instance.target = instance.target.resize_exact(width_resized, height_resized, FilterType::Lanczos3);
 
+        instance.target_width = width_resized;
+        instance.target_height = height_resized;
+
         // Create blocks to overlay onto final image:
         let mut blocks: Vec<MosaicImageChild> = Vec::new();
 
@@ -116,7 +115,7 @@ impl MosaicImage {
         }
     }
 
-    fn find_closest_child<'a>(images: &Vec<MosaicImageChild>, rgb: &(u8, u8, u8)) -> Option<MosaicImageChild> {
+    fn find_closest_child<'a>(images: &Vec<MosaicImageChild>, rgb: &(u8, u8, u8)) -> Option<(usize, MosaicImageChild)> {
         // Using Euclidean distance calculate to calculate which image in `instance.images`
         // has the closest average color to the target block.
         fn color_distance(c1: &(u8, u8, u8), c2: &(u8, u8, u8)) -> f64 {
@@ -139,7 +138,7 @@ impl MosaicImage {
             }
         }
         if closest_idx < images.len() {
-            return Some(images[closest_idx].clone());
+            return Some((closest_idx, images[closest_idx].clone()));
         }
         return None
 
@@ -151,10 +150,14 @@ impl MosaicImage {
 
                 match found {
                     Some(image) => {
-                        instance.images.remove(0);
-                        instance.closest.push(image.clone());
+                        let idx = image.0;
+                        let matched = image.1;
+
+                        instance.images.remove(idx);
+                        instance.closest.push(matched.clone());
                     }
-                    None => {}
+                    None => {
+                    }
                 }
 
 
@@ -164,5 +167,39 @@ impl MosaicImage {
             }
             println!("Compiling images {}%!", 100);
         }
+    }
+
+    pub fn overlay_blocks(instance: &mut MosaicImage) -> DynamicImage {
+        let grid_resolution = instance.grid_resolution;
+
+        let width = instance.target_width;
+        let height = instance.target_height;
+
+        let rgb_img = RgbImage::new(width, height);
+        let mut img: DynamicImage = DynamicImage::ImageRgb8(rgb_img);
+
+        let total_iterations = (width / grid_resolution) * (height / grid_resolution);
+
+        let mut idx = 0;
+        for current_height in (0..height).step_by(grid_resolution as usize) {
+            for current_width in (0..width).step_by(grid_resolution as usize) {
+                let block = instance.closest.pop();
+                match block {
+                    Some(block) => {
+                        let new_block = block.image.resize_exact(grid_resolution, grid_resolution, FilterType::Lanczos3);
+                        imageops::overlay(&mut img, &new_block, current_width as i64, current_height as i64);
+                    }
+                    None => {
+                        println!("No block found for ({}, {})", current_width, current_height);
+                    }
+                }
+
+                idx += 1;
+                if idx % 20 == 0 {
+                    println!("Overlaying images {}%!", (idx as f32 / total_iterations as f32 * 100f32) as u32);
+                }
+            }
+        }
+        return img;
     }
 }

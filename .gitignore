@@ -3,3 +3,10 @@
 
 test_images/src/*
 test_images/targets/*
+
+*.png
+*.pickle
+*.jpg
+*.exe
+
+__pycache__
