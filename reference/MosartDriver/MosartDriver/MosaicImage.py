@@ -10,6 +10,7 @@ from PIL import Image
 logger = logging.getLogger(__name__)
 
 
+# Implemented!
 def calculate_optimal_inverse_resolution(target: Image, include: int) -> int:
     """
     Calculates the optimal inverse resolution to `include` images

@@ -8,7 +8,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
+# Implemented!
 class MosaicImageChild:
     """
     NOTE: This is a very temperamental class to say the least, a lot of PIL.Image.Image methods will cause attributes to
