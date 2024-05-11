@@ -100,7 +100,7 @@ impl MosaicImage {
         // Create blocks to overlay onto final image:
         let mut blocks: Vec<MosaicImageChild> = Vec::new();
 
-
+        let j = 0;
         for j in (0..height_resized).step_by(grid_resolution as usize) {
             for i in (0..width_resized).step_by(grid_resolution as usize) {
                 let cropped = instance.target.crop(i, j, i + grid_resolution, j + grid_resolution);
@@ -121,12 +121,11 @@ impl MosaicImage {
         fn color_distance(c1: &(u8, u8, u8), c2: &(u8, u8, u8)) -> f64 {
             let (r1, g1, b1): (u8, u8, u8) = *c1;
             let (r2, g2, b2): (u8, u8, u8) = *c2;
-
             return ((r1 as f64 - r2 as f64).powi(2) + (g1 as f64 - g2 as f64).powi(2) + (b1 as f64 - b2 as f64).powi(2)).sqrt()
         }
 
         // Iterate through all values, store the closest value and index of said value
-        let mut closest_distance: f64 = 99999.9;
+        let mut closest_distance: f64 = f64::INFINITY;
         let mut closest_idx = 0;
 
         for (k, image) in images.iter().enumerate() {
@@ -152,9 +151,8 @@ impl MosaicImage {
                     Some(image) => {
                         let idx = image.0;
                         let matched = image.1;
-
-                        instance.images.remove(idx);
                         instance.closest.push(matched.clone());
+                        instance.images.remove(idx);
                     }
                     None => {
                     }
@@ -181,8 +179,11 @@ impl MosaicImage {
         let total_iterations = (width / grid_resolution) * (height / grid_resolution);
 
         let mut idx = 0;
+        instance.closest.reverse();
+
         for current_height in (0..height).step_by(grid_resolution as usize) {
             for current_width in (0..width).step_by(grid_resolution as usize) {
+                idx += 1;
                 let block = instance.closest.pop();
                 match block {
                     Some(block) => {
@@ -191,10 +192,11 @@ impl MosaicImage {
                     }
                     None => {
                         println!("No block found for ({}, {})", current_width, current_height);
+                        break;
                     }
                 }
 
-                idx += 1;
+                // idx += 1;
                 if idx % 20 == 0 {
                     println!("Overlaying images {}%!", (idx as f32 / total_iterations as f32 * 100f32) as u32);
                 }

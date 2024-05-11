@@ -37,7 +37,7 @@ fn main() {
 
 
     // Create new MosaicImage
-    let mut mosaic_image = MosaicImage::new(resized_image, src_paths, None, INCLUDE);
+    let mut mosaic_image = MosaicImage::new(target_image, src_paths, None, INCLUDE);
     println!("Optimal Grid Resolution: {:?}", mosaic_image.grid_resolution);
     println!("Using {}/{} images.", mosaic_image.images.len(), src_image_count);
 

@@ -3,7 +3,7 @@ import math
 import pathlib
 import pickle
 import os
-from typing import Union
+from typing import Union, Tuple
 
 try:
     from PIL import Image
@@ -32,7 +32,7 @@ def calculate_optimal_inverse_resolution(target: Image, include: int) -> int:
     total_area = width * height
 
     chunk_area = total_area / include
-    return round(math.sqrt(chunk_area))
+    return math.ceil(math.sqrt(chunk_area))
 
 
 class MosaicImage:
@@ -113,7 +113,7 @@ class MosaicImage:
 
         self.rgb_targets = [i.avg_rgb for i in blocks]
 
-    def find_closest_child(self, rgb: tuple[int, int, int]) -> Union[MosaicImageChild, None]:
+    def find_closest_child(self, rgb: tuple[int, int, int]):
         logger.debug(f"Finding closest child to {rgb}.")
         """
         Using euclidian distance calculate to calculate which image in `self.images` has the closest average color to
@@ -127,11 +127,22 @@ class MosaicImage:
             return math.sqrt((r1 - r2) ** 2 + (g1 - g2) ** 2 + (b1 - b2) ** 2)
 
         # Find the color in the list that is closest to the target color
-        closest_colors = sorted(self.images, key=lambda img: color_distance(img.avg_rgb, rgb))
-        if closest_colors:
-            return closest_colors[0]
-        else:
-            return None
+        # closest_colors = sorted(self.images, key=lambda img: color_distance(img.avg_rgb, rgb))
+
+        closest_distance: float = float("inf")
+        closest_idx = 0
+
+        for k, im in enumerate(self.images):
+            distance = color_distance(im.avg_rgb, rgb)
+
+            if distance < closest_distance:
+                closest_distance = distance
+                closest_idx = k
+
+        if closest_idx < len(self.images):
+            return closest_idx, self.images[closest_idx]
+        return None, None
+
 
     def compile_closest_images(self) -> None:
         logger.debug("Compiling closest images.")
@@ -143,12 +154,12 @@ class MosaicImage:
         """
         # TODO: Add multithreading, most likely using concurrent.futures.ThreadPoolExecutor
         for k, target in enumerate(self.rgb_targets):
-            found = self.find_closest_child(target)
+            k, found = self.find_closest_child(target)
             if found is None:
                 logging.warning("Ran out of blocks!")
                 break  # Ran out of blocks.
             self.used.append(found)
-            self.images.remove(found)
+            self.images.pop(k)
             self.closest.append(found)
             if k % 20 == 0:
                 logger.debug(f"Compiling images {int(k/len(self.rgb_targets)*100)}%.")
@@ -222,11 +233,11 @@ if __name__ == '__main__':
     import time
     from concurrent.futures import ThreadPoolExecutor
 
-    RELOAD_IMAGES = True
+    RELOAD_IMAGES = False
     INVERSE_RESOLUTION = None  # None to calculate
     MAX_WORKERS = 25
     SRC = "../../../test_images/src"
-    GOAL = "../../../test_images/targets/target2.jpg"
+    GOAL = "../../../test_images/targets/target1.jpg"
     MAX_IMAGES = 10000  # None for all images
     PERCENTAGE_TO_INCLUDE = 1
 
@@ -284,7 +295,7 @@ if __name__ == '__main__':
     final_basic = mosaic.overlay_blocks(blur=False)
 
     logger.info("Writing final image.")
-    final_basic.save("./final.png")
+    final_basic.save("../../../final.png")
     logger.info("Saved image to \"./final.png\".")
 
     logger.info("Generating final (blurred) image.")
