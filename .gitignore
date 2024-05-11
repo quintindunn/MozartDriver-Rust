@@ -1,0 +1,5 @@
+/target
+/Cargo.lock
+
+test_images/src/*
+test_images/targets/*
