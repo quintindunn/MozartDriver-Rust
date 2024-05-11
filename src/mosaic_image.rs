@@ -187,7 +187,7 @@ impl MosaicImage {
                 let block = instance.closest.pop();
                 match block {
                     Some(block) => {
-                        let new_block = block.image.resize_exact(grid_resolution, grid_resolution, FilterType::Lanczos3);
+                        let new_block = block.image.resize_exact(grid_resolution, grid_resolution, FilterType::Nearest);
                         imageops::overlay(&mut img, &new_block, current_width as i64, current_height as i64);
                     }
                     None => {

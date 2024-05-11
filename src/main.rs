@@ -9,7 +9,7 @@ use image::GenericImageView;
 use image::imageops::FilterType;
 
 fn main() {
-    const INCLUDE: f32 = 1.0;
+    const INCLUDE: f32 = 1f32;
 
     // Get the images to build the mozart
     let mut target_images = read_dir("./test_images/targets").unwrap();
@@ -37,7 +37,7 @@ fn main() {
 
 
     // Create new MosaicImage
-    let mut mosaic_image = MosaicImage::new(target_image, src_paths, None, INCLUDE);
+    let mut mosaic_image = MosaicImage::new(target_image, src_paths, Some(16), INCLUDE);
     println!("Optimal Grid Resolution: {:?}", mosaic_image.grid_resolution);
     println!("Using {}/{} images.", mosaic_image.images.len(), src_image_count);
 
