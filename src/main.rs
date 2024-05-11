@@ -30,9 +30,12 @@ fn main() {
 
 
     // Create new MosaicImage
-    let mut mosaic_image = MosaicImage::new(target_image.clone(), src_paths, None, 0.004);
+    let mut mosaic_image = MosaicImage::new(target_image.clone(), src_paths, None, 0.016);
     println!("Optimal Grid Resolution: {:?}", mosaic_image.grid_resolution);
 
     println!("Creating color grids!");
     MosaicImage::create_color_grids(&mut mosaic_image);
+
+    println!("Compiling closest blocks!");
+    MosaicImage::compile_closest_images(&mut mosaic_image);
 }

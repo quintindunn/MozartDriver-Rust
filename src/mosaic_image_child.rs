@@ -1,5 +1,6 @@
 use image::{DynamicImage, GenericImageView};
 
+#[derive(Clone)]
 pub struct MosaicImageChild {
     image: DynamicImage,
     pub avg_rgb_values: (u8, u8, u8)
