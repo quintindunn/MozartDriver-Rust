@@ -1,0 +1,5 @@
+__version__ = "2.0.0"
+__description__ = "Driving module for Mozart project."
+__author__ = "Quintin Dunn"
+__email__ = "dunnquintin07@gmail.com"
+__github__ = "https://github.com/quintindunn/MosartDriver"
