@@ -1,8 +1,10 @@
 mod mosaic_image;
+mod mosaic_image_child;
+
+use mosaic_image::MosaicImage;
 
 use std::fs::read_dir;
 use std::path::{Path};
-use mosaic_image::MosaicImage;
 
 fn main() {
     // Get the images to build the mozart

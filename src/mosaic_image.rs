@@ -1,4 +1,4 @@
-use image::DynamicImage;
+use image::{DynamicImage, GenericImageView};
 
 #[path = "./utils.rs"]
 mod utils;
@@ -41,6 +41,22 @@ impl MosaicImage {
         }
 
         return instance;
+    }
 
+    pub fn calculate_blocks(instance: MosaicImage) -> u32 {
+        /*
+        Calculates the amount of blocks that will be present in instance.rgb_targets for
+        about an inadequate amount of blocks.
+
+        # Returns
+        * u32 of estimated number of blocks
+         */
+
+        let (width, height) = instance.target.clone().dimensions();
+
+        let resized_width = (width / instance.grid_resolution) * instance.grid_resolution;
+        let resized_height = (width / instance.grid_resolution) * instance.grid_resolution;
+
+        return (resized_width / instance.grid_resolution) * (resized_height / instance.grid_resolution);
     }
 }
