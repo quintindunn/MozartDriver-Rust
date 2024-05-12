@@ -100,7 +100,6 @@ impl MosaicImage {
         // Create blocks to overlay onto final image:
         let mut blocks: Vec<MosaicImageChild> = Vec::new();
 
-        let j = 0;
         for j in (0..height_resized).step_by(grid_resolution as usize) {
             for i in (0..width_resized).step_by(grid_resolution as usize) {
                 let cropped = instance.target.crop(i, j, i + grid_resolution, j + grid_resolution);
